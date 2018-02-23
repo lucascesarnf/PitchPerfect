@@ -10,7 +10,7 @@ import UIKit
 import AVFoundation
 
 class PlaySoundsViewController: UIViewController {
-    var recordAudioURL:URL!
+    
     @IBOutlet weak var slowButton: UIButton!
     @IBOutlet weak var fastButton: UIButton!
     @IBOutlet weak var lowButton: UIButton!
@@ -29,13 +29,36 @@ class PlaySoundsViewController: UIViewController {
         case slow = 0, fast, chipmunk, vader, echo, reverb
     }
     
+    override func viewDidLoad() {
+         super.viewDidLoad()
+         setupAudio()
+    }
+    
     override func viewWillAppear(_ animated: Bool) {
         configureUI(.notPlaying)
     }
     
-    
-    @IBAction func playSoundAction(_ sender: Any) {
+    // MARK: - Actions
+    @IBAction func playSoundAction(_ sender: UIButton) {
+        switch(ButtonType(rawValue: sender.tag)!) {
+        case .slow:
+            playSound(rate: 0.5)
+        case .fast:
+            playSound(rate: 1.5)
+        case .chipmunk:
+            playSound(pitch: 1000)
+        case .vader:
+            playSound(pitch: -1000)
+        case .echo:
+            playSound(echo: true)
+        case .reverb:
+            playSound(reverb: true)
+        }
+        
+        configureUI(.playing)
     }
+    
     @IBAction func stopSoundAction(_ sender: Any) {
+        stopAudio()
     }
 }

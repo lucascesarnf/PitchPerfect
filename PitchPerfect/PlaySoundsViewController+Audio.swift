@@ -12,21 +12,6 @@ import AVFoundation
 
 extension PlaySoundsViewController: AVAudioPlayerDelegate {
     
-    // MARK: Alerts
-    
-    struct Alerts {
-        static let DismissAlert = "Dismiss"
-        static let RecordingDisabledTitle = "Recording Disabled"
-        static let RecordingDisabledMessage = "You've disabled this app from recording your microphone. Check Settings."
-        static let RecordingFailedTitle = "Recording Failed"
-        static let RecordingFailedMessage = "Something went wrong with your recording."
-        static let AudioRecorderError = "Audio Recorder Error"
-        static let AudioSessionError = "Audio Session Error"
-        static let AudioRecordingError = "Audio Recording Error"
-        static let AudioFileError = "Audio File Error"
-        static let AudioEngineError = "Audio Engine Error"
-    }
-    
     // MARK: PlayingState (raw values correspond to sender tags)
     
     enum PlayingState { case playing, notPlaying }
@@ -135,7 +120,7 @@ extension PlaySoundsViewController: AVAudioPlayerDelegate {
     // MARK: Connect List of Audio Nodes
     
     func connectAudioNodes(_ nodes: AVAudioNode...) {
-        for x in 0..<nodes.count-1 {
+        for x in 0 ..< nodes.count - 1 {
             audioEngine.connect(nodes[x], to: nodes[x+1], format: audioFile.processingFormat)
         }
     }
@@ -160,11 +145,5 @@ extension PlaySoundsViewController: AVAudioPlayerDelegate {
         hightButton.isEnabled = enabled
         echoButton.isEnabled = enabled
         reverbButton.isEnabled = enabled
-    }
-    
-    func showAlert(_ title: String, message: String) {
-        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: Alerts.DismissAlert, style: .default, handler: nil))
-        self.present(alert, animated: true, completion: nil)
     }
 }

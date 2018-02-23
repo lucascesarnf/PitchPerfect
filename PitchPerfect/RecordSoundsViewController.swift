@@ -11,6 +11,12 @@ import AVFoundation
 
 class RecordSoundsViewController: UIViewController , AVAudioRecorderDelegate {
     
+    enum RecordState: String {
+         case recording = "Recording in progress"
+         case waiting = "Tap to Record"
+        
+    }
+    
     var audioRecorder: AVAudioRecorder!
     let segueIdentifier = "finishRecordSegue"
     @IBOutlet weak var recordButton: UIButton!
@@ -23,7 +29,7 @@ class RecordSoundsViewController: UIViewController , AVAudioRecorderDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        stopRecordingButton.isEnabled = false
+        setRecordState(recordIsEnable:true)
         UIApplication.shared.statusBarStyle = .lightContent
         
         //Here to can set the division line of the navigation invisible, I set a empty image both on background an shadow
@@ -31,12 +37,9 @@ class RecordSoundsViewController: UIViewController , AVAudioRecorderDelegate {
         self.navigationController?.navigationBar.shadowImage = UIImage()
     }
     
-    
+    // MARK: - Actions
     @IBAction func recordAudio(_ sender: Any) {
-        animateLabel()
-        recordingLabel.text = "Recording in progress"
-        stopRecordingButton.isEnabled = true
-        recordButton.isEnabled = false
+        setRecordState(recordIsEnable:false)
         
         let dirPath = NSSearchPathForDirectoriesInDomains(.documentDirectory,.userDomainMask, true)[0] as String
         let recordingName = "recordedVoice.wav"
@@ -54,15 +57,24 @@ class RecordSoundsViewController: UIViewController , AVAudioRecorderDelegate {
     }
     
     @IBAction func stopRecording(_ sender: Any) {
-        stopAnimateLabel()
-        recordingLabel.text = "Tap to Record"
-        stopRecordingButton.isEnabled = false
-        recordButton.isEnabled = true
-        
+        setRecordState(recordIsEnable:true)
         audioRecorder.stop()
         let audioSession = AVAudioSession.sharedInstance()
         try! audioSession.setActive(false)
         
+    }
+    
+    // MARK: - Utils
+    func setRecordState(recordIsEnable: Bool) {
+         recordButton.isEnabled = recordIsEnable
+         stopRecordingButton.isEnabled = !recordIsEnable
+        if recordIsEnable {
+            stopRecordAnimation()
+            recordingLabel.text = RecordState.waiting.rawValue
+        } else {
+            recordAnimation()
+            recordingLabel.text = RecordState.recording.rawValue
+        }
     }
     
     // MARK: - AudioRecorder
@@ -70,7 +82,7 @@ class RecordSoundsViewController: UIViewController , AVAudioRecorderDelegate {
         if flag {
             performSegue(withIdentifier: segueIdentifier, sender: audioRecorder.url)
         } else {
-            //Trait problems here
+             showAlert(Alerts.RecordingFailedTitle, message:Alerts.RecordingFailedMessage)
         }
     }
     
@@ -80,14 +92,12 @@ class RecordSoundsViewController: UIViewController , AVAudioRecorderDelegate {
         if segue.identifier == segueIdentifier {
             let playSoundsVC = segue.destination as! PlaySoundsViewController
             let recordAudioURL = sender as! URL
-            playSoundsVC.recordAudioURL = recordAudioURL
+            playSoundsVC.recordedAudioURL = recordAudioURL
         }
     }
     
-    
-    
     // MARK: - Animation
-    func animateLabel() {
+    func recordAnimation() {
         UIView.animate(withDuration: 0.8, delay: 0, options: [.repeat, .autoreverse], animations: {
            self.recordButton.transform = CGAffineTransform(scaleX: 0.9, y: 0.9)
             self.view.layoutIfNeeded()
@@ -95,7 +105,7 @@ class RecordSoundsViewController: UIViewController , AVAudioRecorderDelegate {
         }, completion: nil)
     }
     
-    func stopAnimateLabel() {
+    func stopRecordAnimation() {
         UIView.animate(withDuration: 0.5, animations: {
             self.recordingLabel.alpha = 1
             self.recordButton.transform = CGAffineTransform.identity
